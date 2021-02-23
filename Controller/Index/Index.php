@@ -9,14 +9,23 @@ namespace Metagento\StockQty\Controller\Index;
 
 class Index extends \Magento\Framework\App\Action\Action
 {
+	public $stockRepository;
+	
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Magento\CatalogInventory\Api\StockStateInterface $stockState
-    ) {
+        \Magento\CatalogInventory\Api\StockStateInterface $stockState,
+		\Magento\CatalogInventory\Model\Stock\StockItemRepository $stockItemRepository
+    ) 
+	{
         parent::__construct($context);
         $this->stockState = $stockState;
+		$this->stockRepository = $stockItemRepository;
     }
 
+    public function getStockItem($productId)
+    {
+        return $this->stockRepository->get($productId);
+    }
 
     /**
      * Execute action based on request and return result
@@ -31,8 +40,8 @@ class Index extends \Magento\Framework\App\Action\Action
         $html      = '';
         $productId = $this->getRequest()->getParam('product_id');
         if ($productId) {
-            $stockQty = $this->stockState->getStockQty($productId);
-            $html     = __("Qty: ") . $stockQty;
+            $stockQty = $this->getStockItem($productId);//$this->stockState->getStockQty($productId);
+            $html     = __("Qty: ") . $stockQty->getQty();
         }
 
         /** @var \Magento\Framework\Controller\Result\Json $result */
